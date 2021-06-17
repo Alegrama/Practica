@@ -212,5 +212,5 @@ bool_vec <- c(TRUE, TRUE, FALSE)
 
 Salario <- c(5000,56700,6000)
 
-=data.frame(int_vec,char_vec,bool_vec,Salario)
+dfejercicio4=data.frame(int_vec,char_vec,bool_vec,Salario)
 View(dfejercicio4)
