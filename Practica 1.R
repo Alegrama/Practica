@@ -189,8 +189,6 @@ AP=c(2001,2004,2007,2010)
 
 DFPelis=data.frame(NP,Puntuacion,AP)
 
-View(DFPelis)
-   
 #Ejercicio 3
 nombres=c("hugo","paco","luis","paty","maria","ruben","gaby")
 edades=c(28L,26L,32L,24L,33L,23L,43L)
@@ -198,8 +196,8 @@ sueldos=c(12.5,13.5,14.8,7.1,57.7,45.3,34.2)
 genero=c("m","m","m","f","f","m","m")
 pasatiempos=c("musica","musica","estudio","videojuegos","musica","musica","videojuegos")
 
-
 dfejercicio3=data.frame(nombres,edades,sueldos,genero,pasatiempos)
+
 View(dfejercicio3)
 
 #Ejercicio 4 
@@ -215,76 +213,4 @@ bool_vec <- c(TRUE, TRUE, FALSE)
 Salario <- c(5000,56700,6000)
 
 dfejercicio4=data.frame(int_vec,char_vec,bool_vec,Salario)
-View (dfejercicio4)
-
-Salariocomision=c((Salario*.05)+Salario)
-print(Salariocomision)
-
-vectorComi = c(dt$columna+10)
-
-#Parte 2 Caso Estadistico
-genero2=c("f","m","f","m","m","f","m","m","m","f")
-edad2=c(50L,40L,57L,67L,56L,78L,48L,66L,76L,63L)
-glucemia_basal=c(123L,230L,180L,164L,210L,220L,193L,202L,152L,185L)
-tratamiento_con_antidiabéticos_orales=c(FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,TRUE,TRUE,FALSE,FALSE)
-
-
-mispacientes=data.frame(genero2,edad2,glucemia_basal,tratamiento_con_antidiabéticos_orales)
-View(mispacientes)
-
-max(edad2)
-max(glucemia_basal)
-   max(mispacientes$edad2)
-min(edad2)
-min(glucemia_basal)
-
-mean(edad2)
-mean(glucemia_basal)
-sd(mispacientes$edad2)
-
-round(sd(mispacientes$edad2),2)
-quantile (edad2)
-
-FrecuenciaAbsoluta  = table (glucemia_basal)
-FrecuenciaRelativa  =  FrecuenciaAbsoluta / length ( glucemia_basal )
-
-#Investigue alguna forma de representar gráficamente las variables edad y genero
-
-
-pie(edad2, labels = paste0(edad2, "%"))
-barplot(table(mispacientes$genero2),
-        main="Distribución género",
-        col=c("black","purple"),
-        ylab="cantidad")
-
-tabla_genero=table(genero2)
-
-pie(tabla_genero)
-
-install.packages("dplyr")
-library(dplyr)
-
-Tablaprovincia=table(Provincia)
-pie(Tablaprovincia)
-
-View(BD_Clientes_xls)
-
-
-pie (table(Salida_xls$Provincia) ,
-     main="Distribución por Provincia",
-     labels=c("Alajuela", "Heredia", "San Jose", "Puntarenas", "Guanacaste", "Limon", "Cartago"))
-hist(mispacientes$glucemia_basal)
-
-Productos=data.frame(Productos)
-class(Productos)
-tail(Productos)
-head(Productos)
-summary(Productos)
-
-#dplyr
-
-var_productos=select(Productos,NombreProducto,Categoría,PrecioUnidad)
-View(var_productos)
-
-View(select(Productos,1:4))
-View(var_productos2)
+View(dfejercicio4)
