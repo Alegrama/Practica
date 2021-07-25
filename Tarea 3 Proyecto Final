@@ -1,0 +1,170 @@
+attach(hitters)
+library(dplyr)
+library(ggplot2)
+install.packages("gganimate")
+library(gganimate)
+install.packages("gifski")
+library(gifski)
+install.packages("gapminder")
+library(gapminder)
+library(plotly)
+install.packages("plotly")
+
+#Analisis exploratorio  
+heads(hitters)
+View(hitters)
+
+# Extracci?n de informaci?n  a ser analizada
+SeleccionColumnas=select(hitters,CAtBat,CHits,CHmRun,CRuns,CRBI,CWalks,Salary)
+
+#Limpieza de filas con campos NA
+View(Hitters1 <- na.omit(hitters))
+
+#Calcular el promedi0 de average de los bateadores en la temporada y en la carrera
+AvgeTemporada=mutate(Hitters1,Average=Hitters1$Hits/Hitters1$AtBat,AvgeCarrera=Hitters1$CHits/Hitters1$CAtBat)
+View(AvgeTemporada)
+hist(AvgeTemporada$Average, 
+     main='Distribucion del promedio de Bateo de la Temporada',
+     col='red',
+     xlab = 'Promedio de Bateo',
+     ylab = 'Frecuencia')
+
+# En la temporada el desempeno de bateo se concentra en el rango de .250 a .300
+
+#Distribucion de bateadores por liga
+AgrupamientoLiga=Hitters1%>%group_by(League)%>%
+summarise( Cantidad =n())
+
+plot(x=as.factor(AgrupamientoLiga$League),y=AgrupamientoLiga$Cantidad)
+
+
+barplot(table(AgrupamientoLiga$League),
+        col='blue',
+        border='red',
+        main='Distribucion de Bateadores por Liga',
+        xlab='Liga'    )
+                
+
+
+#ggplot Distribucion de salarios
+library(ggplot2)
+ggplot(data = Hitters1, aes(x = Hitters1$Salary,fill=AvgeTemporada)) +
+geom_histogram(color = "white", fill = "purple") +
+  labs(title = "Distribucion Salario") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+#Interactivo  
+ggplotly(Grafico)
+
+
+
+#Analisis de correlacion
+Muestra=select(AvgeTemporada,CAtBat,CHits,CHmRun,CRuns,CRBI,CWalks,Salary,AvgeCarrera)
+Muestra2=select(AvgeTemporada,AtBat,Hits,HmRun,Runs,RBI,Walks,Salary,Average)
+pairs(Muestra)
+pairs(Muestra2)
+cor(Muestra)
+cor(Muestra2)
+plot(x=Muestra$CAtBat,y=Muestra$CRuns,
+     main="Correlacion entre Turnos al Bate y Carreras",
+     xlab = "Turnos al Bate",
+     ylab = "Carreras",
+     col= 'violet',
+     pch=10,
+     panel.first = grid())
+     
+
+plot_ly(data=Muestra,x=~CAtBat,y=~CRuns, color=~'red',symbol = ~'Species')     
+
+
+
+
+
+
+
+#Entrenamiento del modelo
+ModeloTR = lm(CRuns ~ CAtBat,Muestra)
+summary(ModeloTR)
+abline(ModeloTR,col="red")
+
+Test = data.frame(CAtBat=seq(300,500,50))
+
+data=predict(ModeloTR,Test)
+plot(data)
+
+#La prediccion realizada nos indica que para los vectores (Turnos al Bate) consigue carreras
+#  300    25.63
+#  350    32.75
+#  400    39.86
+#  450    46.98
+#  500    54.10   
+
+
+library(tydiverse)
+data(tuits)
+
+
+
+
+
+
+download.file("https://raw.githubusercontent.com/jboscomendoza/rpubs/master/sentimientos_afinn/tuits_candidatos.csv",
+              "tuits_candidatos.csv")
+tuits <- read.csv("tuits_candidatos.csv", stringsAsFactors = F, fileEncoding = "latin1") %>% 
+  tbl_df()
+download.file("https://raw.githubusercontent.com/jboscomendoza/rpubs/master/sentimientos_afinn/lexico_afinn.en.es.csv",
+              "lexico_afinn.en.es.csv")
+
+
+afinn <- read.csv("lexico_afinn.en.es.csv", stringsAsFactors = F, fileEncoding = "latin1") %>% 
+  tbl_df()
+
+tuits <- 
+  tuits %>%
+  separate(created_at, into = c("Fecha", "Hora"), sep = " ") %>%
+  separate(Fecha, into = c("Dia", "Mes", "Periodo"), sep = "/",
+           remove = FALSE) %>%
+  mutate(Fecha = dmy(Fecha),
+         Semana = week(Fecha) %>% as.factor(),
+         text = tolower(text)) %>%
+  filter(Periodo == 2018)
+
+tuits_afinn <- 
+  tuits %>%
+  unnest_tokens(input = "text", output = "Palabra") %>%
+  inner_join(afinn, ., by = "Palabra") %>%
+  mutate(Tipo = ifelse(Puntuacion > 0, "Positiva", "Negativa")) %>% 
+  rename("Candidato" = screen_name)
+
+tuits <-
+  tuits_afinn %>%
+  group_by(status_id) %>%
+  summarise(Puntuacion_tuit = mean(Puntuacion)) %>%
+  left_join(tuits, ., by = "status_id") %>% 
+  mutate(Puntuacion_tuit = ifelse(is.na(Puntuacion_tuit), 0, Puntuacion_tuit)) %>% 
+  rename("Candidato" = screen_name)
+
+View(tuits_afinn %>%
+  count(Candidato))
+
+
+tuits_afinn %>% 
+  group_by(Candidato) %>% 
+  distinct(Palabra) %>% 
+  count()
+
+
+map(c("Positiva", "Negativa"), function(sentimiento) {
+  tuits_afinn %>%
+    filter(Tipo ==  sentimiento) %>%
+    group_by(Candidato) %>%
+    count(Palabra, sort = T) %>%
+    top_n(n = 10, wt = n) %>%
+    ggplot() +
+    aes(Palabra, n, fill = Candidato) +
+    geom_col() +
+    facet_wrap("Candidato", scales = "free") +
+    scale_y_continuous(expand = c(0, 0)) +
+    coord_flip() +
+    labs(title = sentimiento) +
+    tema_graf

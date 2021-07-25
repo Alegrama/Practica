@@ -21,3 +21,7 @@ View(HitsEsperados)
 Prediccion=predict(Regresion, HitsEsperados)
 View(Prediccion)
 
+
+
+
+class(var)
