@@ -168,3 +168,55 @@ map(c("Positiva", "Negativa"), function(sentimiento) {
     coord_flip() +
     labs(title = sentimiento) +
     tema_graf
+    
+    #CORRELACION
+
+corplot=ggcorr(select(Hitters,-c("League","Division","NewLeague")),size=2)+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+corplot
+
+#Como era de esperar, existe una fuerte correlación entre las estadísticas y métricas del béisbol 
+#en relación con el salario de los jugadores. ¡Cuanto mejor sea el rendimiento, mayor será el salario
+#Además, hay mucha multicolinealidad entre los predictores. es decir, el número de veces al bate tiene 
+#una fuerte correlación con el número de veces que eres capaz de hacer un hit, un jonrón o incluso una carrera.
+
+#VISUALIZACION DE DATOS
+
+Regresion2=lm(Runs~Hits,SeleccionColumnas)
+summary(Regresion2)
+abline(Regresion2,col="red")
+
+Hitters$Salary <- log(Hitters$Salary)
+
+ggplot(data = Hitters, aes(x = Salary)) +
+  geom_histogram(color = "white", fill = "black") +
+  labs(title = "Distribución log(Salary)") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+library(caret)
+library(glmnet)
+
+histogram(Hitters$Salary, xlab = "Salary, $1000s", 
+          main = "Baseball Salaries, 1986 - 1987")
+
+#Distribución variable respuesta
+
+ggplot(data = OJ, aes(x = Purchase, y = ..count.., fill = Purchase)) +
+  geom_bar() + labs(title = "Distribución Purchase") + scale_fill_manual(values = c("darkgreen", "orangered2"), 
+  labels = c("Citrus Hill", "Orange Juice")) + theme_bw() + theme(plot.title = element_text(hjust = 0.5))
+
+#PREDICCIONES
+
+AtBat=ggplot(Hitters,aes(AtBat,Salary))+
+  geom_point()+
+  geom_smooth()
+
+Hits=ggplot(Hitters,aes(CHits,Salary))+
+  geom_point()+
+  geom_smooth()
+
+HmRun=ggplot(Hitters,aes(CHmRun,Salary))+
+  geom_point()+
+  geom_smooth()
+
+ggplot(AtBat,Hits,HmRun,ncol=1,nrow=3)
